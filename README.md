@@ -21,6 +21,7 @@ This project has been a deep dive into **state management, data structures, and 
 git clone https://github.com/Amandeep2230/SigmaText.git
 ```
 🔹 Set directory to the project and run the executable file
+
 🔹 To open an existing file: 
 ```
 ./sigmatext <existing_file_name>
