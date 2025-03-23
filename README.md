@@ -33,14 +33,23 @@ git clone https://github.com/Amandeep2230/SigmaText.git
 
 ### Commands
 🔹 'e' => Edit Mode
+
 🔹 'Esc' => Toggle back to view mode
+
 🔹 'q' => close the editor
+
 🔹 'w' => write/save changes to a file
+
 🔹 'c' => copy
+
 🔹 'v' => paste
+
 🔹 'd' => cut
+
 🔹 's' => undo (will maintain state of changes being made)
+
 🔹 'l' => redo (will rollback to previous pre-change state)
+
 🔹 'h' => toggle text highlight
 
 
