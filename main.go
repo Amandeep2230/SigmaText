@@ -8,6 +8,7 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/aquasecurity/table"
 	"github.com/mattn/go-runewidth"
 	"github.com/nsf/termbox-go"
 )
@@ -490,6 +491,28 @@ func run_editor() {
 	}
 }
 
+func help() {
+	fmt.Println("Commands: ")
+	t := table.New(os.Stdout)
+	t.AddRow("e", "Edit mode")
+	t.AddRow("Esc", "Toggle back to view mode")
+	t.AddRow("q", "Close the editor")
+	t.AddRow("w", "write/save changes to a file")
+	t.AddRow("c", "copy line")
+	t.AddRow("v", "paste line")
+	t.AddRow("d", "cut line")
+	t.AddRow("s", "enter undo state")
+	t.AddRow("l", "redo changes")
+	t.AddRow("h", "highlight/unhighlight line")
+	t.Render()
+}
+
 func main() {
-	run_editor()
+	for _, arg := range os.Args[1:] {
+		if arg == "--help" || arg == "-help" || arg == "--h" || arg == "-h" {
+			help()
+		} else {
+			run_editor()
+		}
+	}
 }
