@@ -6,12 +6,14 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"unicode"
 
 	"github.com/mattn/go-runewidth"
 	"github.com/nsf/termbox-go"
 )
 
 var mode int
+var highlight = 1
 var ROWS, COLS int
 var offset_col, offset_row int
 var currentCol, currentRow int
@@ -185,6 +187,98 @@ func scroll_text_buffer() {
 	}
 }
 
+func highlight_keyword(keyword string, col, row int) {
+	for i := 0; i < len(keyword); i++ {
+		ch := text_buffer[row+offset_row][col+offset_col+i]
+		termbox.SetCell(col+i, row, ch, termbox.ColorWhite|termbox.AttrBold, termbox.ColorDefault)
+	}
+}
+
+func highlight_string(col, row int) int {
+	i := 0
+	for {
+		if col+offset_col+i == len(text_buffer[row+offset_row]) {
+			return i - 1
+		}
+		ch := text_buffer[row+offset_row][col+offset_col+i]
+		if ch == '"' || ch == '\'' {
+			termbox.SetCell(col+i, row, ch, termbox.ColorYellow, termbox.ColorDefault)
+			return i
+		} else {
+			termbox.SetCell(col+i, row, ch, termbox.ColorYellow, termbox.ColorDefault)
+			i++
+		}
+	}
+}
+
+func highlight_comment(col, row int) int {
+	i := 0
+	for {
+		if col+offset_col+i == len(text_buffer[row+offset_row]) {
+			return i - 1
+		}
+		ch := text_buffer[row+offset_row][col+offset_col+i]
+		termbox.SetCell(col+i, row, ch, termbox.ColorMagenta|termbox.AttrBold, termbox.ColorDefault)
+		i++
+	}
+}
+
+func highlight_syntax(col *int, row, text_buffer_col, text_buffer_row int) {
+	ch := text_buffer[text_buffer_row][text_buffer_col]
+	next_token := string(text_buffer[text_buffer_row][text_buffer_col:])
+	if unicode.IsDigit(ch) {
+		termbox.SetCell(*col, row, ch, termbox.ColorYellow|termbox.AttrBold, termbox.ColorDefault)
+	} else if ch == '\'' {
+		termbox.SetCell(*col, row, ch, termbox.ColorYellow, termbox.ColorDefault)
+		*col++
+		*col += highlight_string(*col, row)
+	} else if ch == '"' {
+		termbox.SetCell(*col, row, ch, termbox.ColorYellow, termbox.ColorDefault)
+		*col++
+		*col += highlight_string(*col, row)
+	} else if strings.Contains("+-*><=%&|^!:", string(ch)) {
+		termbox.SetCell(*col, row, ch, termbox.ColorMagenta|termbox.AttrBold, termbox.ColorDefault)
+	} else if ch == '/' {
+		termbox.SetCell(*col, row, ch, termbox.ColorMagenta|termbox.AttrBold, termbox.ColorDefault)
+		index := strings.Index(next_token, "//")
+		if index == 0 {
+			*col += highlight_comment(*col, row)
+		}
+	} else if ch == '#' {
+		termbox.SetCell(*col, row, ch, termbox.ColorMagenta|termbox.AttrBold, termbox.ColorDefault)
+		*col += highlight_comment(*col, row)
+	} else {
+		for _, token := range []string{
+			"false", "False", "NaN", "None",
+			"bool", "break", "byte",
+			"case", "catch", "class", "const", "continue",
+			"def", "do", "double", "as",
+			"elif", "else", "enum", "eval", "except", "exec", "exit", "export", "extends", "extern",
+			"finally", "float", "for", "from", "func", "function",
+			"global",
+			"if", "import", "in", "int", "is",
+			"lambda",
+			"nil", "not", "null",
+			"pass", "print",
+			"raise", "return",
+			"self", "short", "signed", "sizeof", "static", "struct", "switch",
+			"this", "throw", "throws", "true", "True", "try", "typedef", "typeof",
+			"undefined", "union", "unsigned", "until",
+			"var", "void",
+			"while", "with", "yield",
+		} {
+			index := strings.Index(next_token, token+" ")
+			if index == 0 {
+				highlight_keyword(token, *col, row)
+				*col += len(token)
+				break
+			} else {
+				termbox.SetCell(*col, row, ch, termbox.ColorDefault, termbox.ColorDefault)
+			}
+		}
+	}
+}
+
 func display_text_buffer() {
 	var row, col int
 	for row = 0; row < ROWS; row++ {
@@ -193,12 +287,23 @@ func display_text_buffer() {
 			textBufferCol := col + offset_col
 			if text_buffer_row >= 0 && text_buffer_row < len(text_buffer) && textBufferCol < len(text_buffer[text_buffer_row]) {
 				if text_buffer[text_buffer_row][textBufferCol] != '\t' {
-					termbox.SetChar(col, row, text_buffer[text_buffer_row][textBufferCol])
+					if highlight == 1 {
+						highlight_syntax(&col, row, textBufferCol, text_buffer_row)
+					} else {
+						termbox.SetCell(col, row, text_buffer[text_buffer_row][textBufferCol],
+							termbox.ColorDefault, termbox.ColorDefault)
+					}
 				} else {
 					termbox.SetCell(col, row, rune(' '), termbox.ColorDefault, termbox.ColorGreen)
 				}
 			} else if row+offset_row > len(text_buffer)-1 {
 				termbox.SetCell(0, row, rune('*'), termbox.ColorBlue, termbox.ColorDefault)
+			}
+		}
+		if row == currentRow-offset_row && highlight == 1 {
+			for col = 0; col < COLS; col++ {
+				current_cell := termbox.GetCell(col, row)
+				termbox.SetCell(col, row, current_cell.Ch, termbox.ColorDefault, termbox.ColorBlue)
 			}
 		}
 		termbox.SetChar(col, row, rune('\n'))
@@ -284,6 +389,8 @@ func process_keypress() {
 				push_buffer()
 			case 'l':
 				pull_buffer()
+			case 'h':
+				highlight ^= 1
 			}
 		}
 	} else {
