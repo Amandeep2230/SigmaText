@@ -2,7 +2,7 @@
 
 I am in process of learning Go and what better way to learn other than working on a project? So I decided to build my own Vim like terminal based text editor from scratch! 🖥️  
 
-### 🔹 Features Implemented So Far:  
+### Features Implemented So Far:  
 ✅ Create, edit, and view files 
 
 ✅ Status Bar containing: View Mode, File Name, File Info
