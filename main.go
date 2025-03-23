@@ -24,6 +24,7 @@ var undo_buffer = [][]rune{}
 var copy_buffer = []rune{}
 var modified bool
 
+// read an existing file or creating a new one
 func read_file(filename string) {
 	file, err := os.Open(filename)
 
@@ -52,6 +53,7 @@ func read_file(filename string) {
 	}
 }
 
+// write/save changes to a file
 func write_file(filename string) {
 	file, err := os.Create(filename)
 	if err != nil {
@@ -74,6 +76,7 @@ func write_file(filename string) {
 	}
 }
 
+// insert characters to a file
 func insert_rune(event termbox.Event) {
 	insert_rune := make([]rune, len(text_buffer[currentRow])+1)
 	copy(insert_rune[:currentCol], text_buffer[currentRow][:currentCol])
@@ -89,6 +92,7 @@ func insert_rune(event termbox.Event) {
 	currentCol++
 }
 
+// deleting chars from a file
 func delete_rune() {
 	if currentCol > 0 {
 		currentCol--
@@ -112,6 +116,7 @@ func delete_rune() {
 	}
 }
 
+// insert new lines
 func insert_line() {
 	right_line := make([]rune, len(text_buffer[currentRow][currentCol:]))
 	copy(right_line, text_buffer[currentRow][currentCol:])
@@ -127,12 +132,14 @@ func insert_line() {
 	text_buffer = new_text_buffer
 }
 
+// copy
 func copy_line() {
 	copy_line := make([]rune, len(text_buffer[currentRow]))
 	copy(copy_line, text_buffer[currentRow])
 	copy_buffer = copy_line
 }
 
+// cut
 func cut_line() {
 	copy_line()
 	if currentRow >= len(text_buffer) || len(text_buffer) < 2 {
@@ -148,6 +155,7 @@ func cut_line() {
 	}
 }
 
+// paste
 func paste_line() {
 	if len(copy_buffer) == 0 {
 		currentRow++
@@ -160,12 +168,14 @@ func paste_line() {
 	text_buffer = new_text_buffer
 }
 
+// activate undo
 func push_buffer() {
 	copy_undo_buffer := make([][]rune, len(text_buffer))
 	copy(copy_undo_buffer, text_buffer)
 	undo_buffer = copy_undo_buffer
 }
 
+// redo recent changes
 func pull_buffer() {
 	if len(undo_buffer) == 0 {
 		return
@@ -173,6 +183,7 @@ func pull_buffer() {
 	text_buffer = undo_buffer
 }
 
+// make file scrollable using keys
 func scroll_text_buffer() {
 	if currentRow < offset_row {
 		offset_row = currentRow
@@ -188,6 +199,7 @@ func scroll_text_buffer() {
 	}
 }
 
+// highlight lines
 func highlight_keyword(keyword string, col, row int) {
 	for i := 0; i < len(keyword); i++ {
 		ch := text_buffer[row+offset_row][col+offset_col+i]
@@ -195,6 +207,7 @@ func highlight_keyword(keyword string, col, row int) {
 	}
 }
 
+// change color of a string when highlighted
 func highlight_string(col, row int) int {
 	i := 0
 	for {
@@ -212,6 +225,7 @@ func highlight_string(col, row int) int {
 	}
 }
 
+// change color of comment when highlighted
 func highlight_comment(col, row int) int {
 	i := 0
 	for {
@@ -224,6 +238,7 @@ func highlight_comment(col, row int) int {
 	}
 }
 
+// helper function for highlighting
 func highlight_syntax(col *int, row, text_buffer_col, text_buffer_row int) {
 	ch := text_buffer[text_buffer_row][text_buffer_col]
 	next_token := string(text_buffer[text_buffer_row][text_buffer_col:])
@@ -280,6 +295,7 @@ func highlight_syntax(col *int, row, text_buffer_col, text_buffer_row int) {
 	}
 }
 
+// to display text
 func display_text_buffer() {
 	var row, col int
 	for row = 0; row < ROWS; row++ {
@@ -311,6 +327,7 @@ func display_text_buffer() {
 	}
 }
 
+// status bar at bottom of the window
 func display_status_bar() {
 	var mode_status string
 	var file_status string
@@ -352,6 +369,7 @@ func print_messages(col, row int, fg, bg termbox.Attribute, message string) {
 	}
 }
 
+// helper function to parse the key input
 func get_key() termbox.Event {
 	var key_event termbox.Event
 	switch event := termbox.PollEvent(); event.Type {
@@ -363,6 +381,7 @@ func get_key() termbox.Event {
 	return key_event
 }
 
+// binding keys to defined actions
 func process_keypress() {
 	key_event := get_key()
 	if key_event.Key == termbox.KeyEsc {
@@ -460,6 +479,7 @@ func process_keypress() {
 	}
 }
 
+// to execute the editor
 func run_editor() {
 	err := termbox.Init()
 	if err != nil {
@@ -491,6 +511,7 @@ func run_editor() {
 	}
 }
 
+// --help commands
 func help() {
 	fmt.Println("Commands: ")
 	t := table.New(os.Stdout)
@@ -509,6 +530,7 @@ func help() {
 	t.Render()
 }
 
+// main function
 func main() {
 	for _, arg := range os.Args[1:] {
 		if arg == "--help" || arg == "-help" || arg == "--h" || arg == "-h" {
