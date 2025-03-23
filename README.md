@@ -40,26 +40,10 @@ To create a new file:
 ./sigmatext <new_file_name>
 ```
 
-### 🔹 Commands
-'e' => Edit Mode
-
-'Esc' => Toggle back to view mode
-
-'q' => close the editor
-
-'w' => write/save changes to a file
-
-'c' => copy
-
-'v' => paste
-
-'d' => cut
-
-'s' => undo (will maintain state of changes being made)
-
-'l' => redo (will rollback to previous pre-change state)
-
-'h' => toggle text highlight
+### 🔹 To list valid commands
+```
+./sigmatext --help
+```
 
 
 This is a code along project along with some modifications from my end, special thanks to: https://youtube.com/playlist?list=PLLfIBXQeu3aa0NI4RT5OuRQsLo6gtLwGN&si=X5b6wCgdzx9NJlAE
