@@ -4,10 +4,15 @@ I am in process of learning Go and what better way to learn other than working o
 
 ### 🔹 Features Implemented So Far:  
 ✅ Create, edit, and view files 
+
 ✅ Status Bar containing: View Mode, File Name, File Info
+
 ✅ Edit & View modes for better control  
+
 ✅ Copy/Paste functionality  
+
 ✅ Undo/Redo for seamless editing  
+
 ✅ Syntax highlighting to enhance readability  
 
 ![Screenshot 2025-03-23 010114](https://github.com/user-attachments/assets/5d6c4e9f-5144-4541-9d9d-371ece37023d)
